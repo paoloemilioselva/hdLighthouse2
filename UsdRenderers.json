@@ -1,0 +1,12 @@
+{
+  "HdLighthouse2RendererPlugin": {
+    "valid": true,
+    "menulabel": "Lighthouse2",
+    "menupriority": 40,
+    "depthstyle": "opengl",
+    "allowbackgroundupdate": false,
+    "defaultpurposes": [ "guide", "proxy" ],
+    "drawmodesupport": true,
+    "aovsupport": false
+  }
+}

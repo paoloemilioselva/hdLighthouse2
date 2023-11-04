@@ -1,0 +1,11 @@
+{
+  "hpath": "$HOUDINI_USER_PREF_DIR/hdLighthouse2",
+  "env": [
+    {
+      "PATH": "$HOUDINI_USER_PREF_DIR/hdLighthouse2"
+    },
+    {
+      "LIGHTHOUSE2_PATH": "$HOUDINI_USER_PREF_DIR/hdLighthouse2"
+    }
+  ]
+}
