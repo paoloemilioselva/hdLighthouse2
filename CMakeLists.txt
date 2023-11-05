@@ -35,13 +35,11 @@ set(LIGHTHOUSE2_LIB_DIRECTORY
 set(LIGHTHOUSE2_LIBS 
     rendersystem
     platform
-    libz-static
 )
 
 include(cmake/FindUsd.cmake)
 
 add_library( ${DELEGATE_NAME} SHARED
-
     HdLighthouse2RendererPlugin.cpp
     HdLighthouse2RendererPlugin.h
     HdLighthouse2RenderDelegate.cpp
@@ -66,50 +64,46 @@ add_library( ${DELEGATE_NAME} SHARED
     Lighthouse2Utils.h
 )
 
-target_link_libraries(
-        ${DELEGATE_NAME}
+target_link_libraries( ${DELEGATE_NAME}
         PUBLIC
         Usd::Usd
         OpenGL::GL
-        ${LIGHTHOUSE2_LIBS}
-        )
+        ${LIGHTHOUSE2_LIBS} )
 
-target_include_directories(
-    ${DELEGATE_NAME}
-    SYSTEM
-    PRIVATE
-        ${LIGHTHOUSE2_INCLUDE_DIRECTORY}
-)
+target_include_directories( ${DELEGATE_NAME} SYSTEM PRIVATE ${LIGHTHOUSE2_INCLUDE_DIRECTORY} )
 
-target_link_directories(
-    ${DELEGATE_NAME}
-    PRIVATE
-        ${LIGHTHOUSE2_LIB_DIRECTORY}
-)
+target_link_directories( ${DELEGATE_NAME} PRIVATE ${LIGHTHOUSE2_LIB_DIRECTORY} )
 
-target_compile_options(
-        ${DELEGATE_NAME}
+target_compile_options( ${DELEGATE_NAME}
         PRIVATE
         $<$<CXX_COMPILER_ID:MSVC>:/W3 /O2 /wd4273 /Zi /experimental:external /external:W0>
-        $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:RelWithDebInfo>>:/Ob0 /Od>
-        )
+        $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:RelWithDebInfo>>:/Ob0 /Od> )
 
-target_link_options(
-        ${DELEGATE_NAME}
+target_link_options( ${DELEGATE_NAME}
         PRIVATE
-        $<$<CXX_COMPILER_ID:MSVC>:/ignore:4217 /ignore:4049> 
-        )
+        $<$<CXX_COMPILER_ID:MSVC>:/ignore:4217 /ignore:4049> )
 
-configure_file(plugInfo.json plugInfo.json @ONLY)
-configure_file(UsdRenderers.json UsdRenderers.json @ONLY)
-configure_file(${DELEGATE_NAME}.json ${DELEGATE_NAME}.json @ONLY)
+add_custom_command(
+    TARGET ${DELEGATE_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_BINARY_DIR}/${DELEGATE_NAME}.dll
+        ${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/dso/usd_plugins/${DELEGATE_NAME}.dll )
 
-install(TARGETS ${DELEGATE_NAME} DESTINATION ${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/dso/usd_plugins)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${DELEGATE_NAME}.json DESTINATION ${HOUDINI_ROOT_USER}/packages)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/UsdRenderers.json DESTINATION ${HOUDINI_ROOT_USER}/${DELEGATE_NAME})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plugInfo.json DESTINATION ${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/dso/usd_plugins)
+
+#configure_file(plugInfo.json plugInfo.json @ONLY)
+#configure_file(UsdRenderers.json UsdRenderers.json @ONLY)
+#configure_file(${DELEGATE_NAME}.json ${DELEGATE_NAME}.json @ONLY)
+
+#install(TARGETS ${DELEGATE_NAME} DESTINATION ${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/dso/usd_plugins)
+
+#install(FILES ${CMAKE_SOURCE_DIR}/${DELEGATE_NAME}.json DESTINATION ${HOUDINI_ROOT_USER}/packages)
+#install(FILES ${CMAKE_SOURCE_DIR}/UsdRenderers.json DESTINATION ${HOUDINI_ROOT_USER}/${DELEGATE_NAME})
+#install(FILES ${CMAKE_SOURCE_DIR}/plugInfo.json DESTINATION ${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/dso/usd_plugins)
 
 set(files_to_copy
+    ${CMAKE_SOURCE_DIR}/${DELEGATE_NAME}.json,${HOUDINI_ROOT_USER}/packages
+    ${CMAKE_SOURCE_DIR}/UsdRenderers.json,${HOUDINI_ROOT_USER}/${DELEGATE_NAME}
+    ${CMAKE_SOURCE_DIR}/plugInfo.json,${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/dso/usd_plugins
     ${LIGHTHOUSE2_ROOT}/apps/viewerapp/freeimage.dll,${HOUDINI_ROOT_USER}/${DELEGATE_NAME}
     ${LIGHTHOUSE2_ROOT}/apps/viewerapp/freetype.dll,${HOUDINI_ROOT_USER}/${DELEGATE_NAME}
     ${LIGHTHOUSE2_ROOT}/coredlls/Release/RenderCore_Optix7.dll,${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/Lighthouse2/lib/cores
@@ -167,10 +161,16 @@ foreach( f IN LISTS GLOB_RESULT )
     list(APPEND files_to_copy ${f},${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/Lighthouse2/lib/RenderSystem/materials)
 endforeach()
 
+message(STATUS "Copying files in POST_BUILD:")
 foreach( f IN LISTS files_to_copy )
     string(REPLACE "," ";" t ${f})
     list(GET t 0 f_orig)
     list(GET t 1 f_dest)
-    configure_file( ${f_orig} ${f_orig} @ONLY )
-    install(FILES ${f_orig} DESTINATION ${f_dest})
+    file(TO_CMAKE_PATH "${f_orig}" f_orig)
+    file(TO_CMAKE_PATH "${f_dest}" f_dest)
+    message(STATUS " - ${f_orig} -> ${f_dest}")
+    add_custom_command( TARGET ${DELEGATE_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E make_directory ${f_dest} )
+    add_custom_command( TARGET ${DELEGATE_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${f_orig} ${f_dest} )
+    #configure_file( ${f_orig} ${f_orig} @ONLY )
+    #install(FILES ${f_orig} DESTINATION ${f_dest})
 endforeach()

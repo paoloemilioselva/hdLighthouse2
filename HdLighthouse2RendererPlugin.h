@@ -1,8 +1,8 @@
 #ifndef HDLIGHTHOUSE2_RENDERERPLUGIN_H
 #define HDLIGHTHOUSE2_RENDERERPLUGIN_H
 
-#include <pxr/pxr.h>
 #include <pxr/imaging/hd/rendererPlugin.h>
+#include <pxr/pxr.h>
 
 class HdLighthouse2RendererPlugin final : public pxr::HdRendererPlugin
 {
