@@ -5,11 +5,37 @@ set( DELEGATE_NAME hdLighthouse2 )
 
 find_package( OpenGL REQUIRED )
 
-set( HOUDINI_MAJ_MIN "19.5" )
-set( HOUDINI_PATCH "773" )
-set( HOUDINI_VERSION "Houdini ${HOUDINI_MAJ_MIN}.${HOUDINI_PATCH}" )
-set( HOUDINI_ROOT "C:\\Program Files\\Side Effects Software\\${HOUDINI_VERSION}" )
-set( HOUDINI_ROOT_USER "C:\\Users\\$ENV{USERNAME}\\Documents\\houdini${HOUDINI_MAJ_MIN}" )
+if(NOT TARGET_CONFIG)
+    set( TARGET_CONFIG "houdini-19.5-773-39")
+    #set( TARGET_CONFIG "houdini-20.0-506-310")
+    #set( TARGET_CONFIG "usd-23.08")
+endif()
+string(REPLACE "-" ";" _t_config ${TARGET_CONFIG})
+list(LENGTH _t_config _t_config_length)
+if(_t_config_length LESS 2)
+    MESSAGE(FATAL_ERROR "Wrong TARGET_CONFIG value " ${TARGET_CONFIG} )
+endif()
+list(GET _t_config 0 _target_name )
+if( _target_name MATCHES "houdini" )
+    list(GET _t_config 1 HOUDINI_MAJ_MIN )
+    list(GET _t_config 2 HOUDINI_PATCH )
+    list(GET _t_config 3 HOUDINI_PYTHON_VERSION )
+    set( HOUDINI_VERSION "Houdini ${HOUDINI_MAJ_MIN}.${HOUDINI_PATCH}" )
+    set( HOUDINI_ROOT "C:\\Program Files\\Side Effects Software\\${HOUDINI_VERSION}" )
+    set( HOUDINI_ROOT_USER "C:\\Users\\$ENV{USERNAME}\\Documents\\houdini${HOUDINI_MAJ_MIN}" )
+    MESSAGE(STATUS "Building for Houdini" )
+    MESSAGE(STATUS "HOUDINI_VERSION = " ${HOUDINI_VERSION} )
+    MESSAGE(STATUS "HOUDINI_ROOT = " ${HOUDINI_ROOT} )
+    MESSAGE(STATUS "HOUDINI_ROOT_USER = " ${HOUDINI_ROOT_USER} )
+    MESSAGE(STATUS "HOUDINI_PYTHON_VERSION = " ${HOUDINI_PYTHON_VERSION} )
+elseif( _target_name MATCHES "usd" )
+    MESSAGE(STATUS "Building for OpenUSD" )
+else()
+    MESSAGE(FATAL_ERROR "Invalid target " ${_target_name})
+endif()
+
+include(cmake/FindUsd.cmake)
+
 
 set(LIGHTHOUSE2_ROOT "C:/Users/paolo/Desktop/code/lighthouse2")
 
@@ -36,8 +62,6 @@ set(LIGHTHOUSE2_LIBS
     rendersystem
     platform
 )
-
-include(cmake/FindUsd.cmake)
 
 add_library( ${DELEGATE_NAME} SHARED
     HdLighthouse2RendererPlugin.cpp
@@ -89,17 +113,6 @@ add_custom_command(
         ${CMAKE_CURRENT_BINARY_DIR}/${DELEGATE_NAME}.dll
         ${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/dso/usd_plugins/${DELEGATE_NAME}.dll )
 
-
-#configure_file(plugInfo.json plugInfo.json @ONLY)
-#configure_file(UsdRenderers.json UsdRenderers.json @ONLY)
-#configure_file(${DELEGATE_NAME}.json ${DELEGATE_NAME}.json @ONLY)
-
-#install(TARGETS ${DELEGATE_NAME} DESTINATION ${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/dso/usd_plugins)
-
-#install(FILES ${CMAKE_SOURCE_DIR}/${DELEGATE_NAME}.json DESTINATION ${HOUDINI_ROOT_USER}/packages)
-#install(FILES ${CMAKE_SOURCE_DIR}/UsdRenderers.json DESTINATION ${HOUDINI_ROOT_USER}/${DELEGATE_NAME})
-#install(FILES ${CMAKE_SOURCE_DIR}/plugInfo.json DESTINATION ${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/dso/usd_plugins)
-
 set(files_to_copy
     ${CMAKE_SOURCE_DIR}/${DELEGATE_NAME}.json,${HOUDINI_ROOT_USER}/packages
     ${CMAKE_SOURCE_DIR}/UsdRenderers.json,${HOUDINI_ROOT_USER}/${DELEGATE_NAME}
@@ -121,44 +134,40 @@ set(files_to_copy
     ${CMAKE_SOURCE_DIR}/ibls/qwantani_puresky_2k.hdr,${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/ibls
 )
 
-file( GLOB_RECURSE GLOB_RESULT ${LIGHTHOUSE2_ROOT}/lib/CUDA/* )
-foreach( f IN LISTS GLOB_RESULT )
-    list(APPEND files_to_copy ${f},${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/Lighthouse2/lib/CUDA)
+set( folders_to_copy 
+    lib/CUDA
+    lib/CUDA/shared_host_code
+    lib/CUDA/shared_kernel_code
+    lib/OptiX
+    lib/OptiX/include
+    lib/OptiX/include/internal
+    lib/OptiX/include/optix_prime
+    lib/OptiX/include/optixu
+    lib/OptiX/lib64
+    lib/OptiX7
+    lib/OptiX7/include
+    lib/OptiX7/include/internal
+    lib/rendercore_optix7/kernels
+    lib/rendercore_optix7/optix
+    lib/RenderSystem/materials/pbrt
+
+)
+
+foreach( d IN LISTS folders_to_copy )
+    file( GLOB GLOB_RESULT ${LIGHTHOUSE2_ROOT}/${d}/* )
+    foreach( f IN LISTS GLOB_RESULT )
+        list(APPEND files_to_copy ${f},${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/Lighthouse2/${d})
+    endforeach()
 endforeach()
 
-file( GLOB_RECURSE GLOB_RESULT ${LIGHTHOUSE2_ROOT}/lib/OptiX/* )
+file( GLOB GLOB_RESULT ${LIGHTHOUSE2_ROOT}/apps/viewerapp/data/noise/* )
 foreach( f IN LISTS GLOB_RESULT )
-    list(APPEND files_to_copy ${f},${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/Lighthouse2/lib/OptiX)
+    list(APPEND files_to_copy ${f},${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/data/noise)
 endforeach()
 
-file( GLOB_RECURSE GLOB_RESULT ${LIGHTHOUSE2_ROOT}/lib/OptiX7/* )
-foreach( f IN LISTS GLOB_RESULT )
-    list(APPEND files_to_copy ${f},${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/Lighthouse2/lib/OptiX7)
-endforeach()
-
-file( GLOB_RECURSE GLOB_RESULT ${LIGHTHOUSE2_ROOT}/apps/viewerapp/data/* )
-foreach( f IN LISTS GLOB_RESULT )
-    list(APPEND files_to_copy ${f},${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/data)
-endforeach()
-
-file( GLOB_RECURSE GLOB_RESULT ${LIGHTHOUSE2_ROOT}/apps/viewerapp/shaders/* )
+file( GLOB GLOB_RESULT ${LIGHTHOUSE2_ROOT}/apps/viewerapp/shaders/* )
 foreach( f IN LISTS GLOB_RESULT )
     list(APPEND files_to_copy ${f},${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/shaders)
-endforeach()
-
-file( GLOB_RECURSE GLOB_RESULT ${LIGHTHOUSE2_ROOT}/lib/rendercore_optix7/kernels/* )
-foreach( f IN LISTS GLOB_RESULT )
-    list(APPEND files_to_copy ${f},${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/Lighthouse2/lib/rendercore_optix7/kernels)
-endforeach()
-
-file( GLOB_RECURSE GLOB_RESULT ${LIGHTHOUSE2_ROOT}/lib/rendercore_optix7/optix/* )
-foreach( f IN LISTS GLOB_RESULT )
-    list(APPEND files_to_copy ${f},${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/Lighthouse2/lib/rendercore_optix7/optix)
-endforeach()
-
-file( GLOB_RECURSE GLOB_RESULT ${LIGHTHOUSE2_ROOT}/lib/RenderSystem/materials/* )
-foreach( f IN LISTS GLOB_RESULT )
-    list(APPEND files_to_copy ${f},${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/Lighthouse2/lib/RenderSystem/materials)
 endforeach()
 
 message(STATUS "Copying files in POST_BUILD:")
@@ -168,7 +177,7 @@ foreach( f IN LISTS files_to_copy )
     list(GET t 1 f_dest)
     file(TO_CMAKE_PATH "${f_orig}" f_orig)
     file(TO_CMAKE_PATH "${f_dest}" f_dest)
-    message(STATUS " - ${f_orig} -> ${f_dest}")
+    #message(STATUS " - ${f_orig} -> ${f_dest}")
     add_custom_command( TARGET ${DELEGATE_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E make_directory ${f_dest} )
     add_custom_command( TARGET ${DELEGATE_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${f_orig} ${f_dest} )
     #configure_file( ${f_orig} ${f_orig} @ONLY )

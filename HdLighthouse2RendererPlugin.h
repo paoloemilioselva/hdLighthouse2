@@ -15,7 +15,11 @@ public:
 
     void DeleteRenderDelegate(pxr::HdRenderDelegate* renderDelegate) override;
 
+#if PXR_VERSION > 2205
+    bool IsSupported(bool) const override;
+#else
     bool IsSupported() const override;
+#endif
 
 private:
     HdLighthouse2RendererPlugin(const HdLighthouse2RendererPlugin&) = delete;

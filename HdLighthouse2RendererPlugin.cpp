@@ -26,7 +26,11 @@ void HdLighthouse2RendererPlugin::DeleteRenderDelegate(pxr::HdRenderDelegate* re
     delete renderDelegate;
 }
 
+#if PXR_VERSION > 2205
+bool HdLighthouse2RendererPlugin::IsSupported(bool glEnabled) const
+#else
 bool HdLighthouse2RendererPlugin::IsSupported() const
+#endif
 {
     return true;
 }

@@ -253,7 +253,6 @@ HdLighthouse2Mesh::_PopulateMesh(HdSceneDelegate* sceneDelegate,
         // Get normals (smooth them for now)
         //
         //std::cout << "Building normals..." << std::endl;
-        auto& normals = sceneDelegate->Get(id, pxr::HdTokens->normals).Get<pxr::VtVec3fArray>();
         Hd_VertexAdjacency _adjacency;
         _adjacency.BuildAdjacencyTable(&_topology);
         auto _computedNormals = Hd_SmoothNormals::ComputeSmoothNormals(&_adjacency, _points.size(), _points.cdata());
