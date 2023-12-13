@@ -21,7 +21,7 @@ public:
 
     HdLighthouse2Mesh(SdfPath const& id, HdLighthouse2RenderDelegate* delegate);
 
-    virtual ~HdLighthouse2Mesh() = default;
+    virtual ~HdLighthouse2Mesh();
 
     virtual HdDirtyBits GetInitialDirtyBitsMask() const override;
 

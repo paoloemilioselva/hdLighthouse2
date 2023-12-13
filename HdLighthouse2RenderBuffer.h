@@ -85,6 +85,7 @@ public:
     ///           rendered to).
     bool IsConverged() const override {
         return _converged.load();
+        //return true;
     }
 
     /// Set the convergence.

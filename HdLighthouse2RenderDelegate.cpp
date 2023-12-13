@@ -294,20 +294,20 @@ bool HdLighthouse2RenderDelegate::UpdateScene()
 
     // set skydome
     // 
-    if (_ltRenderer->GetScene()->sky == nullptr && _ltLights.size() == 0)
-    {
-        std::string ltPathStr = "";
-        char* ltPath = getenv("LIGHTHOUSE2_PATH");
-        if (ltPath)
-        {
-            ltPathStr = std::string(ltPath) + "/";
-        }
-        std::string skyPath = ltPathStr + "ibls/qwantani_puresky_2k.hdr";
+    //if (_ltRenderer->GetScene()->sky == nullptr && _ltLights.size() == 0)
+    //{
+    //    std::string ltPathStr = "";
+    //    char* ltPath = getenv("LIGHTHOUSE2_PATH");
+    //    if (ltPath)
+    //    {
+    //        ltPathStr = std::string(ltPath) + "/";
+    //    }
+    //    std::string skyPath = ltPathStr + "ibls/qwantani_puresky_2k.hdr";
 
-        _ltRenderer->GetScene()->sky = new HostSkyDome();
-        _ltRenderer->GetScene()->sky->Load(skyPath.c_str());
-        _ltRenderer->GetScene()->sky->worldToLight = mat4::RotateX(-PI / 2); // compensate for different evaluation in PBRT
-    }
+    //    _ltRenderer->GetScene()->sky = new HostSkyDome();
+    //    _ltRenderer->GetScene()->sky->Load(skyPath.c_str());
+    //    _ltRenderer->GetScene()->sky->worldToLight = mat4::RotateX(-PI / 2); // compensate for different evaluation in PBRT
+    //}
 
     // check for new meshes
     //

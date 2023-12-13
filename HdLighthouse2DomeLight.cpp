@@ -9,6 +9,12 @@ HdLighthouse2DomeLight::HdLighthouse2DomeLight(
 
 HdLighthouse2DomeLight::~HdLighthouse2DomeLight()
 {
+    std::lock_guard<std::mutex> guard(_owner->rendererMutex());
+    if (_owner->GetRenderer()->GetScene()->sky != nullptr)
+    {
+        _owner->GetRenderer()->GetScene()->sky = new HostSkyDome();
+        _owner->GetRenderer()->GetScene()->sky->MarkAsDirty();
+    }
 }
 
 HdDirtyBits HdLighthouse2DomeLight::GetInitialDirtyBitsMask() const

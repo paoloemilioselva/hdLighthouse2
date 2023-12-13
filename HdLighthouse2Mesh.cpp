@@ -28,6 +28,12 @@ HdLighthouse2Mesh::HdLighthouse2Mesh(SdfPath const& id, HdLighthouse2RenderDeleg
 {
 }
 
+HdLighthouse2Mesh::~HdLighthouse2Mesh()
+{
+    std::lock_guard<std::mutex> guard(_owner->rendererMutex());
+    //_owner->removeMesh(GetId());
+}
+
 void
 HdLighthouse2Mesh::Finalize(HdRenderParam* renderParam)
 {

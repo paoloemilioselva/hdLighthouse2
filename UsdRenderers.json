@@ -5,8 +5,9 @@
     "menupriority": 40,
     "depthstyle": "opengl",
     "allowbackgroundupdate": false,
-    "defaultpurposes": [ "guide", "proxy" ],
+    "defaultpurposes": [ "render" ],
     "drawmodesupport": true,
-    "aovsupport": false
+    "aovsupport": false,
+    "needsdepth": true
   }
 }

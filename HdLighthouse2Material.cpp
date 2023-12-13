@@ -86,8 +86,18 @@ void HdLighthouse2Material::LtSetParam<HostMaterial::Vec3Value>(HostScene* ltSce
         //std::cout << " - setting " << filename << std::endl;
         //auto modFlags = HostTexture::GAMMACORRECTION | HostTexture::LINEARIZED | HostTexture::FLIPPED;
         auto modFlags = HostTexture::GAMMACORRECTION | HostTexture::FLIPPED;
-        ltParam.textureID = ltScene->FindOrCreateTexture(filename, modFlags);
-        ltScene->textures[ltParam.textureID]->ConstructMIPmaps();
+        std::ifstream texFile;
+        texFile.open(filename);
+        if (texFile)
+        {
+            ltParam.textureID = ltScene->FindOrCreateTexture(filename, modFlags);
+            ltScene->textures[ltParam.textureID]->ConstructMIPmaps();
+        }
+        else
+        {
+            // red, error
+            ltParam = make_float3(1.0,0.0,0.0);
+        }
     }
 }
 
@@ -113,9 +123,18 @@ void HdLighthouse2Material::LtSetParam<HostMaterial::ScalarValue>(HostScene* ltS
         //std::cout << " - setting " << filename << std::endl;
         //auto modFlags = HostTexture::GAMMACORRECTION | HostTexture::LINEARIZED | HostTexture::FLIPPED;
         auto modFlags = HostTexture::GAMMACORRECTION | HostTexture::FLIPPED;
-        ltParam.textureID = ltScene->FindOrCreateTexture(filename, modFlags);
-        ltScene->textures[ltParam.textureID]->ConstructMIPmaps();
-        std::cout << "MIPMAP " << ltScene->textures[ltParam.textureID]->MIPlevels << std::endl;
+        std::ifstream texFile;
+        texFile.open(filename);
+        if (texFile)
+        {
+            ltParam.textureID = ltScene->FindOrCreateTexture(filename, modFlags);
+            ltScene->textures[ltParam.textureID]->ConstructMIPmaps();
+        }
+        else
+        {
+            ltParam = 0.0;
+        }
+        //std::cout << "MIPMAP " << ltScene->textures[ltParam.textureID]->MIPlevels << std::endl;
     }
 }
 
