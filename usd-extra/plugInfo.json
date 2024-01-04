@@ -1,0 +1,22 @@
+{
+  "Plugins": [
+    {
+      "Info": {
+        "Types": {
+          "HdLighthouse2RendererPlugin": {
+            "bases": [
+              "HdRendererPlugin"
+            ],
+            "displayName": "Lighthouse2",
+            "priority": 99
+          }
+        }
+      },
+      "LibraryPath": "../hdLighthouse2.dll",
+      "Name": "hdLighthouse2",
+      "Type": "library",
+      "ResourcePath": "resources",
+      "Root": ".."
+    }
+  ]
+}

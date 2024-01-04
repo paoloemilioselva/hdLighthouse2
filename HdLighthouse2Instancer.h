@@ -1,10 +1,11 @@
 #ifndef HDLIGHTHOUSE2INSTANCER_H
 #define HDLIGHTHOUSE2INSTANCER_H
 
+#include "pxr/pxr.h"
+
 #include <pxr/imaging/hd/instancer.h>
 #include <pxr/imaging/hd/renderDelegate.h>
 #include <pxr/imaging/hd/sceneDelegate.h>
-#include <pxr/pxr.h>
 #include <pxr/base/gf/half.h>
 #include <pxr/base/gf/matrix4f.h>
 #include <pxr/base/gf/quatd.h>
@@ -13,24 +14,20 @@
 #include <pxr/base/gf/vec4f.h>
 #include <pxr/imaging/hd/vtBufferSource.h>
 
-PXR_NAMESPACE_OPEN_SCOPE
-
-class HdLighthouse2Instancer : public HdInstancer
+class HdLighthouse2Instancer : public pxr::HdInstancer
 {
 public:
-    HdLighthouse2Instancer(HdSceneDelegate* delegate, SdfPath const& id);
+    HdLighthouse2Instancer(pxr::HdSceneDelegate* delegate, pxr::SdfPath const& id);
     ~HdLighthouse2Instancer();
 
-    void Sync(HdSceneDelegate* sceneDelegate, HdRenderParam* renderParam, HdDirtyBits* dirtyBits) override;
+    void Sync(pxr::HdSceneDelegate* sceneDelegate, pxr::HdRenderParam* renderParam, pxr::HdDirtyBits* dirtyBits) override;
 
-    VtMatrix4dArray ComputeInstanceTransforms(SdfPath const& prototypeId);
+    pxr::VtMatrix4dArray ComputeInstanceTransforms(pxr::SdfPath const& prototypeId);
 
 private:
-    void _SyncPrimvars(HdSceneDelegate* delegate, HdDirtyBits dirtyBits);
+    void _SyncPrimvars(pxr::HdSceneDelegate* delegate, pxr::HdDirtyBits dirtyBits);
 
-    TfHashMap<TfToken, HdVtBufferSource*, TfToken::HashFunctor> _primvarMap;
+    pxr::TfHashMap<pxr::TfToken, pxr::HdVtBufferSource*, pxr::TfToken::HashFunctor> _primvarMap;
 };
-
-PXR_NAMESPACE_CLOSE_SCOPE
 
 #endif

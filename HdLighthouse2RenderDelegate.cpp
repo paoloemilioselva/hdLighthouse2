@@ -110,6 +110,7 @@ void HdLighthouse2RenderDelegate::_Initialize()
         auto& mat = GetMaterial(pxr::SdfPath("_lighthouse2_default_material_"), make_float3(1, 1, 1));
         mat.material->ID = _ltRenderer->GetScene()->AddMaterial(mat.material);
         _ltDefaultMaterial = mat.material->ID;
+        std::cout << "Lighthouse2 renderer ready" << std::endl;
     }
 
     if (!_ltRenderTarget)
