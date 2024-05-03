@@ -1,6 +1,8 @@
 
 #include "HdLighthouse2Instancer.h"
 #include <pxr/imaging/hd/sceneDelegate.h>
+#include <pxr/base/gf/quath.h>
+#include <iostream>
 
 PXR_NAMESPACE_USING_DIRECTIVE
 
@@ -39,7 +41,7 @@ void HdLighthouse2Instancer::_SyncPrimvars(pxr::HdSceneDelegate* delegate, pxr::
 
     for (pxr::HdPrimvarDescriptor const& pv : primvars)
     {
-        if (pxr::HdChangeTracker::IsPrimvarDirty(dirtyBits, id, pv.name))
+        //if (pxr::HdChangeTracker::IsPrimvarDirty(dirtyBits, id, pv.name))
         {
             pxr::VtValue value = delegate->Get(id, pv.name);
             if (!value.IsEmpty())
@@ -86,11 +88,14 @@ pxr::VtMatrix4dArray HdLighthouse2Instancer::ComputeInstanceTransforms(pxr::SdfP
     {
         transforms[i] = instancerTransform;
     }
+    pxr::HdVtBufferSource* pBuffer = nullptr;
 
-    // "translate" holds a translation vector for each index.
     if (_primvarMap.count(pxr::HdInstancerTokens->instanceTranslations) > 0)
+        pBuffer = _primvarMap[pxr::HdInstancerTokens->instanceTranslations];
+    else if (_primvarMap.count(pxr::HdInstancerTokens->translate) > 0)
+        pBuffer = _primvarMap[pxr::HdInstancerTokens->translate];
+    if (pBuffer)
     {
-        const auto* pBuffer = _primvarMap[pxr::HdInstancerTokens->instanceTranslations];
         for (size_t i = 0; i < instanceIndices.size(); ++i)
         {
             pxr::GfVec3f translate;
@@ -103,26 +108,40 @@ pxr::VtMatrix4dArray HdLighthouse2Instancer::ComputeInstanceTransforms(pxr::SdfP
         }
     }
 
-    // "rotate" holds a quaternion in <real, i, j, k> format for each index.
     if (_primvarMap.count(pxr::HdInstancerTokens->instanceRotations) > 0)
+        pBuffer = _primvarMap[pxr::HdInstancerTokens->instanceRotations];
+    else if (_primvarMap.count(pxr::HdInstancerTokens->rotate) > 0)
+        pBuffer = _primvarMap[pxr::HdInstancerTokens->rotate];
+    if (pBuffer)
     {
-        const auto* pBuffer = _primvarMap[pxr::HdInstancerTokens->instanceRotations];
         for (size_t i = 0; i < instanceIndices.size(); ++i)
         {
-            pxr::GfVec4f quat;
-            if (SampleBuffer(*pBuffer, instanceIndices[i], &quat, { pxr::HdTypeFloatVec4, 1 }))
+            pxr::GfQuath quat;
+            if (SampleBuffer(*pBuffer, instanceIndices[i], &quat, { pxr::HdTypeHalfFloatVec4, 1 }))
             {
                 pxr::GfMatrix4d rotateMat(1);
-                rotateMat.SetRotate(pxr::GfQuatd(quat[0], quat[1], quat[2], quat[3]));
+                rotateMat.SetRotate(quat);
                 transforms[i] = rotateMat * transforms[i];
+            }
+            else
+            {
+                pxr::GfVec4f quatf;
+                if (SampleBuffer(*pBuffer, instanceIndices[i], &quatf, { pxr::HdTypeFloatVec4, 1 }))
+                {
+                    pxr::GfMatrix4d rotateMat(1);
+                    rotateMat.SetRotate(pxr::GfQuatd(quatf[0], quatf[1], quatf[2], quatf[3]));
+                    transforms[i] = rotateMat * transforms[i];
+                }
             }
         }
     }
 
-    // "scale" holds an axis-aligned scale vector for each index.
     if (_primvarMap.count(pxr::HdInstancerTokens->instanceScales) > 0)
+        pBuffer = _primvarMap[pxr::HdInstancerTokens->instanceScales];
+    else if (_primvarMap.count(pxr::HdInstancerTokens->scale) > 0)
+        pBuffer = _primvarMap[pxr::HdInstancerTokens->scale];
+    if (pBuffer)
     {
-        const auto* pBuffer = _primvarMap[pxr::HdInstancerTokens->instanceScales];
         for (size_t i = 0; i < instanceIndices.size(); ++i)
         {
             pxr::GfVec3f scale;
@@ -135,10 +154,12 @@ pxr::VtMatrix4dArray HdLighthouse2Instancer::ComputeInstanceTransforms(pxr::SdfP
         }
     }
 
-    // "instanceTransform" holds a 4x4 transform matrix for each index.
     if (_primvarMap.count(pxr::HdInstancerTokens->instanceTransforms) > 0)
+        pBuffer = _primvarMap[pxr::HdInstancerTokens->instanceTransforms];
+    else if (_primvarMap.count(pxr::HdInstancerTokens->instanceTransform) > 0)
+        pBuffer = _primvarMap[pxr::HdInstancerTokens->instanceTransform];
+    if (pBuffer)
     {
-        const auto* pBuffer = _primvarMap[pxr::HdInstancerTokens->instanceTransforms];
         for (size_t i = 0; i < instanceIndices.size(); ++i)
         {
             pxr::GfMatrix4d instanceTransform;

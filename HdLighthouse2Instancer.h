@@ -12,6 +12,8 @@
 #include <pxr/base/gf/vec2f.h>
 #include <pxr/base/gf/vec3f.h>
 #include <pxr/base/gf/vec4f.h>
+#include <pxr/base/gf/quaternion.h>
+#include <pxr/base/gf/rotation.h>
 #include <pxr/imaging/hd/vtBufferSource.h>
 
 class HdLighthouse2Instancer : public pxr::HdInstancer
